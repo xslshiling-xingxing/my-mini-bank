@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div style="max-width: 400px; margin: auto; font-family: sans-serif; padding: 20px;">
+    <h2>我的转账本 (带数据库功能)</h2>
+    
+    <input type="number" id="amount" placeholder="输入转账金额">
+    <button onclick="saveData()">存入数据库</button>
+    <button onclick="clearData()" style="background: #ff4d4f; color: white; border: none;">清空</button>
+
+    <h3>历史流水：</h3>
+    <ul id="historyList"></ul>
+</div>
+
+<script>
+    // 1. 【Read 读取】页面一加载，就从数据库里把以前存的拿出来
+    window.onload = function() {
+        showHistory();
+    };
+
+    // 2. 【Create 新增】保存数据
+    function saveData() {
+        const amount = document.getElementById('amount').value;
+        if (!amount) return alert("请输入金额");
+
+        // 先取出旧数据，如果没有就给个空数组
+        let history = JSON.parse(localStorage.getItem('bank_history')) || [];
+        
+        // 把新金额存进去
+        history.push({
+            time: new Date().toLocaleString(),
+            money: amount
+        });
+
+        // 【核心】存入本地数据库 (LocalStorage)
+        localStorage.setItem('bank_history', JSON.stringify(history));
+        
+        alert("已永久存入数据库！");
+        showHistory(); // 刷新显示
+    }
+
+    // 3. 将数据显示在页面上
+    function showHistory() {
+        const list = document.getElementById('historyList');
+        const history = JSON.parse(localStorage.getItem('bank_history')) || [];
+        
+        // 渲染列表
+        list.innerHTML = history.map(item => 
+            `<li>[${item.time}] 转账: ¥${item.money}</li>`
+        ).join('');
+    }
+
+    // 4. 【Delete 删除】清空数据库
+    function clearData() {
+        if(confirm("确定要销毁所有银行流水吗？")) {
+            localStorage.removeItem('bank_history');
+            showHistory();
+        }
+    }
+</script>
+</body>
+</html>
